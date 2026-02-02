@@ -16,17 +16,17 @@ final class FanViewModel: ObservableObject {
     @Published var activePreset: String = "Automatic" {
         didSet {
             UserDefaults.standard.set(activePreset, forKey: "FanPreset")
-            applyPreset()
+            Task { @MainActor in
+                applyPreset()
+            }
         }
     }
 
     @Published var isMonitoring: Bool = false {
         didSet {
             if isMonitoring {
-                print("🕒 FanViewModel: Starting monitoring timer...")
                 startMonitoring()
             } else {
-                print("🕒 FanViewModel: Stopping monitoring timer...")
                 timer?.cancel()
             }
 
@@ -40,15 +40,24 @@ final class FanViewModel: ObservableObject {
 
     init() {
         if let savedPreset = UserDefaults.standard.string(forKey: "FanPreset") {
-            self.activePreset = savedPreset
+            self._activePreset = Published(wrappedValue: savedPreset)
         }
-        self.isMonitoring = true
-        applyPreset()
+        // Start monitoring by default
+        self._isMonitoring = Published(wrappedValue: true)
+
+        // Apply preset and start monitoring after init to avoid publishing warnings
+        Task { @MainActor in
+            startMonitoring()
+            applyPreset()
+        }
     }
 
     private func applyPreset() {
         let isFullBlast = activePreset == "Full Blast"
         let currentFans = fans
+
+        guard !currentFans.isEmpty else { return }
+
         DispatchQueue.global(qos: .userInitiated).async { [smc] in
             for fan in currentFans {
                 smc.setFanMode(fan.id, manual: isFullBlast)
@@ -56,6 +65,18 @@ final class FanViewModel: ObservableObject {
                     smc.setFanTargetRPM(fan.id, rpm: fan.maxRPM)
                 }
             }
+        }
+    }
+
+    func setManualRPM(fanID: Int, rpm: Int) {
+        // Change preset to "Manual" if it's not already
+        if activePreset != "Manual" {
+            activePreset = "Manual"
+        }
+
+        DispatchQueue.global(qos: .userInitiated).async { [smc] in
+            smc.setFanMode(fanID, manual: true)
+            smc.setFanTargetRPM(fanID, rpm: rpm)
         }
     }
 
@@ -75,7 +96,8 @@ final class FanViewModel: ObservableObject {
             let newFans = self.monitor.getFans()
             let newSensors = self.monitor.getSensors()
 
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 let fansChanged = self.fans.isEmpty && !newFans.isEmpty
                 self.fans = newFans
                 self.sensors = newSensors

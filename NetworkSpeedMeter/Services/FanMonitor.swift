@@ -39,6 +39,10 @@ class FanMonitor: ObservableObject {
                 let minRPM = minVal.map { Int(smc.bytesToFloat($0)) } ?? 0
                 let maxRPM = maxVal.map { Int(smc.bytesToFloat($0)) } ?? 6000
 
+                // Read target RPM if possible
+                let targetVal = smc.readKey("F\(i)Tg")
+                let targetRPM = targetVal.map { Int(smc.bytesToFloat($0)) }
+
                 fans.append(
                     FanInfo(
                         id: i,
@@ -46,6 +50,7 @@ class FanMonitor: ObservableObject {
                         currentRPM: rpm,
                         minRPM: minRPM,
                         maxRPM: maxRPM,
+                        targetRPM: targetRPM,
                         mode: .auto
                     )
                 )
@@ -67,8 +72,6 @@ class FanMonitor: ObservableObject {
     func getSensors() -> [SensorInfo] {
         // Use centralized sensor key definitions
         let keys = SMCSensorKeys.allSensors
-
-        print("🌡️ FanMonitor: Starting sensor enumeration...")
         var sensors: [SensorInfo] = []
         for sensor in keys {
             if let temp = smc.getTemperature(sensor.key) {
@@ -76,8 +79,6 @@ class FanMonitor: ObservableObject {
                     sensors.append(
                         SensorInfo(id: sensor.key, name: sensor.name, temperature: temp, isEnabled: true)
                     )
-                } else {
-                    print("  ⚠️ Sensor filtered (out of range): \(sensor.name) (\(sensor.key)) = \(temp)°C")
                 }
             }
         }

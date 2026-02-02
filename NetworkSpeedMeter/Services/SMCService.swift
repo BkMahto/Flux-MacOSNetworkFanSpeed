@@ -71,16 +71,16 @@ class SMCService {
     }
 
     private func unlockSiliconDiagnostics() {
-        var inputStruct = SMCParamStruct()
-        inputStruct.key = stringToKey("Ftst")
-        inputStruct.dataSize = 1
-        inputStruct.bytes.0 = 1
+        var val = SMCVal()
+        val.dataSize = 1
+        val.dataType = stringToKey("ui8 ")
+        val.bytes[0] = 1
 
-        let res = callSMC(.writeValue, inputStruct: &inputStruct)
-        if res == kIOReturnSuccess && inputStruct.result == 0 {
+        let res = writeKey("Ftst", val: val)
+        if res == kIOReturnSuccess {
             print("💎 SMC: Diagnostic mode (Ftst) unlocked")
         } else {
-            print("⚠️ SMC: Failed to unlock Ftst (Result: \(res), SMC: \(inputStruct.result))")
+            print("⚠️ SMC: Ftst lock status (Result: \(res)) - Some models may not require this.")
         }
     }
 
@@ -199,14 +199,7 @@ class SMCService {
     }
 
     func readKey(_ name: String) -> SMCVal? {
-        print("🔍 SMC: Reading key '\(name)'...")
         let info = getInfo(name)
-
-        if let info = info {
-            print("  |_ Info: Size=\(info.size), Type=\(keyToString(info.type))")
-        } else {
-            print("  |_ Info: Key metadata not found, will attempt blind read.")
-        }
 
         var inputStruct = SMCParamStruct()
         inputStruct.key = stringToKey(name)
@@ -220,15 +213,10 @@ class SMCService {
             val.dataSize = inputStruct.dataSize
             val.dataType = info?.type ?? inputStruct.dataType
             val.bytes = withUnsafeBytes(of: inputStruct.bytes) { Array($0) }
-            print(
-                "✅ Read success: \(val.bytes.prefix(Int(val.dataSize)).map { String(format: "%02X", $0) }.joined(separator: " "))"
-            )
             return val
         }
 
-        print("❌ Read failed (Result: \(result), SMC: \(inputStruct.result))")
-
-        // Blind fallback for common data sizes
+        // Blind fallback for common data sizes if info failed
         if info == nil {
             for size in [UInt32(1), 4] {
                 inputStruct.dataSize = size
@@ -240,9 +228,6 @@ class SMCService {
                     val.dataSize = inputStruct.dataSize
                     val.dataType = 0
                     val.bytes = withUnsafeBytes(of: inputStruct.bytes) { Array($0) }
-                    print(
-                        "  ✅ Blind read success (\(size) bytes): \(val.bytes.prefix(Int(val.dataSize)).map { String(format: "%02X", $0) }.joined(separator: " "))"
-                    )
                     return val
                 }
             }
@@ -308,6 +293,9 @@ class SMCService {
         inputStruct.dataSize = val.dataSize
         inputStruct.dataType = val.dataType
 
+        // Critical for Apple Silicon: some writes require 0x80 attribute
+        inputStruct.dataAttributes = 0x80
+
         // Copy array to tuple
         for (i, byte) in val.bytes.enumerated() {
             if i >= 32 { break }
@@ -317,8 +305,11 @@ class SMCService {
             }
         }
 
-        // Modern Silicon write (Index 2 Gateway)
-        return callSMC(.writeValue, inputStruct: &inputStruct)
+        let res = callSMC(.writeValue, inputStruct: &inputStruct)
+        if res != kIOReturnSuccess || inputStruct.result != 0 {
+            print("❌ SMC: Write to '\(name)' failed (Result: \(res), SMC: \(inputStruct.result))")
+        }
+        return res
     }
 
     // MARK: - High Level API
@@ -336,7 +327,6 @@ class SMCService {
 
     func setFanMode(_ index: Int, manual: Bool) {
         // 1. Set per-fan mode (legacy/Intel)
-        // Some chips respond to F{i}Md, some to bitmask, some to both.
         var val = SMCVal()
         val.dataSize = 1
         val.dataType = stringToKey("ui8 ")
@@ -344,10 +334,8 @@ class SMCService {
         _ = writeKey("F\(index)Md", val: val)
 
         // 2. Set System Force bitmask (Apple Silicon override)
-        // This key (FS! ) is typically a 2-byte (16-bit) bitmask.
         if let currentFS = readKey("FS! ") {
             var newFS = currentFS
-            // Safety: Ensure it's at least 2 bytes if we expect a mask for multiple fans
             if newFS.dataSize < 2 { newFS.dataSize = 2 }
 
             let mask = UInt16(1 << index)
@@ -362,35 +350,27 @@ class SMCService {
             newFS.bytes[0] = UInt8((currentMask >> 8) & 0xFF)
             newFS.bytes[1] = UInt8(currentMask & 0xFF)
             _ = writeKey("FS! ", val: newFS)
-            print("🚀 SMC: FS! bitmask updated to \(String(format: "%04X", currentMask))")
         }
     }
 
     func setFanTargetRPM(_ index: Int, rpm: Int) {
-        // Find metadata for target RPM key
         let targetKey = "F\(index)Tg"
-        guard let info = getInfo(targetKey) else {
-            print("⚠️ SMC: Could not find metadata for \(targetKey)")
-            return
-        }
+        guard let info = getInfo(targetKey) else { return }
 
         var val = SMCVal()
         val.dataSize = info.size
         val.dataType = info.type
 
         if info.type == stringToKey("fpe2") {
-            // Unsigned 14.2 fixed point
             let encoded = UInt16(rpm << 2)
             val.bytes[0] = UInt8((encoded >> 8) & 0xFF)
             val.bytes[1] = UInt8(encoded & 0xFF)
         } else {
-            // Assume raw UI16
             val.bytes[0] = UInt8((rpm >> 8) & 0xFF)
             val.bytes[1] = UInt8(rpm & 0xFF)
         }
 
-        let res = writeKey(targetKey, val: val)
-        print("🚀 SMC: Set \(targetKey) to \(rpm) RPM (Result: \(res))")
+        _ = writeKey(targetKey, val: val)
     }
 
     func getTemperature(_ key: String) -> Double? {

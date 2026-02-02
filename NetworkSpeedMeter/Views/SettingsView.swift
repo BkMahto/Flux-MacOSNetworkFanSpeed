@@ -149,10 +149,39 @@ struct SettingsView: View {
 
                 Picker("", selection: $fanViewModel.activePreset) {
                     Text("Automatic").tag("Automatic")
+                    Text("Manual").tag("Manual")
                     Text("Full Blast").tag("Full Blast")
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+
+                if fanViewModel.activePreset == "Manual" {
+                    ForEach(fanViewModel.fans) { fan in
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("\(fan.name)")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text("\(Int(fan.targetRPM ?? fan.currentRPM)) RPM")
+                                    .font(.system(size: 10, design: .monospaced))
+                            }
+
+                            Slider(
+                                value: Binding(
+                                    get: { Double(fan.targetRPM ?? fan.currentRPM) },
+                                    set: { newValue in
+                                        fanViewModel.setManualRPM(fanID: fan.id, rpm: Int(newValue))
+                                    }
+                                ),
+                                in: Double(fan.minRPM)...Double(fan.maxRPM),
+                                step: 100
+                            )
+                            .controlSize(.small)
+                        }
+                        .padding(.top, 4)
+                    }
+                }
             }
 
             Divider().opacity(0.3)
