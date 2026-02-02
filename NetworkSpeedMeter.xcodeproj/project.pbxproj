@@ -52,7 +52,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C2BEB9CE2F2B504F00DAC1DD /* Build configuration list for PBXNativeTarget "NetworkSpeedMeter" */;
 			buildPhases = (
-				FBCFB6F4326148F3A3634D6E /* Compile Image Assets */,
 				C2BEB9BF2F2B504D00DAC1DD /* Sources */,
 				C2BEB9C02F2B504D00DAC1DD /* Frameworks */,
 				C2BEB9C12F2B504D00DAC1DD /* Resources */,

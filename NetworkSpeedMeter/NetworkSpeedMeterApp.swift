@@ -9,20 +9,20 @@ import SwiftUI
 
 @main
 struct NetworkSpeedMeterApp: App {
-  @StateObject private var networkViewModel = NetworkViewModel()
-  @StateObject private var fanViewModel = FanViewModel()
+    @StateObject private var networkViewModel = NetworkViewModel()
+    @StateObject private var fanViewModel = FanViewModel()
 
-  var body: some Scene {
-    WindowGroup {
-      ContentView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
+    var body: some Scene {
+        WindowGroup {
+            ContentView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
+        }
+
+        MenuBarExtra {
+            SettingsView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
+        } label: {
+            MenuBarView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
+        }
+
+        .menuBarExtraStyle(.window)
     }
-
-    MenuBarExtra {
-      SettingsView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
-    } label: {
-      MenuBarView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
-    }
-
-    .menuBarExtraStyle(.window)
-  }
 }
