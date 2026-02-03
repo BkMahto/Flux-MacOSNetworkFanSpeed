@@ -40,12 +40,12 @@ struct DashboardMetricCard: View {
                     Button {
                         action?()
                     } label: {
-                        Image(systemName: "info.circle.fill")
+                        Image(systemName: AppImages.info)
                             .font(.system(size: 14))
                             .foregroundColor(color.opacity(0.8))
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .help("View Thermal Details")
+                    .help(AppStrings.viewThermalDetails)
                 }
             }
         }

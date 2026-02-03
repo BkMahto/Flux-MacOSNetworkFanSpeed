@@ -16,7 +16,7 @@ struct MenuBarView: View {
         let metrics = MetricType.allCases.filter { networkViewModel.enabledMetrics.contains($0) }
 
         if metrics.isEmpty {
-            Image(systemName: "rocket.fill")
+            Image(systemName: AppImages.rocket)
         } else {
             let combinedImage = renderCombinedMetricsImage(metrics)
             Image(nsImage: combinedImage)
@@ -89,10 +89,10 @@ struct MenuBarView: View {
 
     private func symbolForMetric(_ metric: MetricType) -> String {
         switch metric {
-        case .download: return "arrow.down.circle.fill"
-        case .upload: return "arrow.up.circle.fill"
-        case .fan: return "fanblades.fill"
-        case .temperature: return "thermometer.medium"
+        case .download: return AppImages.download
+        case .upload: return AppImages.upload
+        case .fan: return AppImages.fan
+        case .temperature: return AppImages.temperature
         }
     }
 

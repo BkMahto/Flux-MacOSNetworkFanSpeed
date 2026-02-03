@@ -27,9 +27,9 @@ struct ContentView: View {
 
         var icon: String {
             switch self {
-            case .mini: return "rectangle.portrait"
-            case .standard: return "rectangle"
-            case .expanded: return "rectangle.split.3x1"
+            case .mini: return AppImages.modeMini
+            case .standard: return AppImages.modeStandard
+            case .expanded: return AppImages.modeExpanded
             }
         }
     }
@@ -43,16 +43,19 @@ struct ContentView: View {
                 // Header
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("System Hub")
+                        Text(AppStrings.appName)
                             .font(.title2)
                             .fontWeight(.black)
                         HStack(spacing: 4) {
                             Circle()
                                 .fill(SMCService.shared.isConnected ? Color.blue : Color.red)
                                 .frame(width: 6, height: 6)
-                            Text(SMCService.shared.isConnected ? "Hardware Connected" : "Hardware Disconnected")
-                                .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(.secondary)
+                            Text(
+                                SMCService.shared.isConnected
+                                    ? AppStrings.hardwareConnected : AppStrings.hardwareDisconnected
+                            )
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(.secondary)
                         }
                     }
 
@@ -82,27 +85,27 @@ struct ContentView: View {
                 // Metrics Stack
                 VStack(spacing: 20) {
                     DashboardMetricCard(
-                        title: "Download",
+                        title: AppStrings.download,
                         value: networkViewModel.downloadSpeed,
-                        icon: "arrow.down.circle.fill",
+                        icon: AppImages.download,
                         color: .blue
                     )
                     DashboardMetricCard(
-                        title: "Upload",
+                        title: AppStrings.upload,
                         value: networkViewModel.uploadSpeed,
-                        icon: "arrow.up.circle.fill",
+                        icon: AppImages.upload,
                         color: .green
                     )
                     DashboardMetricCard(
-                        title: "Fan",
+                        title: AppStrings.fan,
                         value: fanViewModel.primaryFanRPM,
-                        icon: "fanblades.fill",
+                        icon: AppImages.fan,
                         color: .indigo
                     )
                     DashboardMetricCard(
-                        title: "System Temp",
+                        title: AppStrings.systemTemp,
                         value: fanViewModel.primaryTemp,
-                        icon: "thermometer.medium",
+                        icon: AppImages.temperature,
                         color: .orange,
                         showInfoButton: viewMode != .expanded,
                         action: {
@@ -152,7 +155,7 @@ struct ContentView: View {
             // Explicitly set title and bring to front with small delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 if let window = NSApp.windows.first(where: { $0.canBecomeKey }) {
-                    window.title = "System Hub"
+                    window.title = AppStrings.appName
                     window.makeKeyAndOrderFront(nil)
                     window.orderFrontRegardless()
                     NSApp.activate(ignoringOtherApps: true)
@@ -178,7 +181,7 @@ struct ContentView: View {
         }
 
         if let window = NSApp.windows.first(where: {
-            $0.isVisible && ($0.title == "System Hub" || $0.canBecomeKey)
+            $0.isVisible && ($0.title == AppStrings.appName || $0.canBecomeKey)
         }) {
             setupWindow(window, mode: mode)
         }

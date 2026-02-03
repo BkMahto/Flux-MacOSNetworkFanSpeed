@@ -17,7 +17,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             // Header
             HStack {
-                Text("System Monitor")
+                Text(AppStrings.systemMonitor)
                     .font(.headline)
                 Spacer()
 
@@ -31,22 +31,22 @@ struct SettingsView: View {
 
                         // Try to find the dashboard window
                         if let window = NSApp.windows.first(where: {
-                            $0.title == "System Hub"
+                            $0.title == AppStrings.appName
                                 || ($0.canBecomeKey && $0.isVisible && !$0.title.isEmpty)
                         }) {
                             window.makeKeyAndOrderFront(nil)
                             window.orderFrontRegardless()
                         }
                     } label: {
-                        Image(systemName: "macwindow")
+                        Image(systemName: AppImages.window)
                             .foregroundColor(.blue)
                             .font(.title3)
                     }
                     .buttonStyle(.plain)
-                    .help("Open System Hub")
+                    .help(AppStrings.openSystemHub)
                 }
 
-                Image(systemName: "gauge.with.dots.needle.bottom.50percent")
+                Image(systemName: AppImages.gauge)
                     .foregroundColor(.secondary)
             }
 
@@ -55,16 +55,16 @@ struct SettingsView: View {
             // Real-time stats display (Network & Fan)
             VStack(spacing: 0) {
                 StatRow(
-                    icon: "arrow.down.circle.fill",
-                    label: "Download",
+                    icon: AppImages.download,
+                    label: AppStrings.download,
                     value: networkViewModel.downloadSpeed,
                     color: .blue
                 )
                 .padding(.vertical, 4)
 
                 StatRow(
-                    icon: "arrow.up.circle.fill",
-                    label: "Upload",
+                    icon: AppImages.upload,
+                    label: AppStrings.upload,
                     value: networkViewModel.uploadSpeed,
                     color: .green
                 )
@@ -73,16 +73,16 @@ struct SettingsView: View {
                 Divider().opacity(0.3)
 
                 StatRow(
-                    icon: "fanblades.fill",
-                    label: fanViewModel.fans.first?.name ?? "Fan",
+                    icon: AppImages.fan,
+                    label: fanViewModel.fans.first?.name ?? AppStrings.fan,
                     value: fanViewModel.primaryFanRPM,
                     color: .blue
                 )
                 .padding(.vertical, 4)
 
                 StatRow(
-                    icon: "thermometer.medium",
-                    label: "CPU Temp",
+                    icon: AppImages.temperature,
+                    label: AppStrings.cpuTemp,
                     value: fanViewModel.primaryTemp,
                     color: .orange
                 )
@@ -100,7 +100,7 @@ struct SettingsView: View {
 
             // Menu Bar Metrics Selection
             VStack(alignment: .leading, spacing: 8) {
-                Label("Menu Bar Metrics", systemImage: "checklist")
+                Label(AppStrings.menuBarMetrics, systemImage: AppImages.checklist)
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(.secondary)
 
@@ -134,7 +134,7 @@ struct SettingsView: View {
             }
 
             HStack {
-                Label("Refresh Rate", systemImage: "arrow.clockwise.circle")
+                Label(AppStrings.refreshRate, systemImage: AppImages.refresh)
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(.secondary)
                 Spacer()
@@ -152,14 +152,14 @@ struct SettingsView: View {
 
             // Fan Control Presets
             VStack(alignment: .leading, spacing: 8) {
-                Label("Fan Control Preset", systemImage: "fan.fill")
+                Label(AppStrings.fanControlPreset, systemImage: AppImages.fanSettings)
                     .font(.system(size: 10, weight: .bold))
                     .foregroundColor(.secondary)
 
                 Picker("", selection: $fanViewModel.activePreset) {
-                    Text("Automatic").tag("Automatic")
-                    Text("Manual").tag("Manual")
-                    Text("Full Blast").tag("Full Blast")
+                    Text(AppStrings.presetAutomatic).tag("Automatic")
+                    Text(AppStrings.presetManual).tag("Manual")
+                    Text(AppStrings.presetFullBlast).tag("Full Blast")
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -172,7 +172,7 @@ struct SettingsView: View {
                                     .font(.system(size: 10))
                                     .foregroundColor(.secondary)
                                 Spacer()
-                                Text("\(Int(fan.targetRPM ?? fan.currentRPM)) RPM")
+                                Text("\(Int(fan.targetRPM ?? fan.currentRPM)) \(AppStrings.rpmUnit)")
                                     .font(.system(size: 10, design: .monospaced))
                             }
 
@@ -198,7 +198,7 @@ struct SettingsView: View {
             // Hardware Diagnostics
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Label("Hardware Connection", systemImage: "cpu")
+                    Label(AppStrings.hardwareConnection, systemImage: AppImages.cpu)
                         .font(.system(size: 10, weight: .bold))
                         .foregroundColor(.secondary)
                     Spacer()
@@ -209,14 +209,14 @@ struct SettingsView: View {
 
                 if !SMCService.shared.isConnected {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(SMCService.shared.lastError ?? "Unknown connection error")
+                        Text(SMCService.shared.lastError ?? AppStrings.unknownConnectionError)
                             .font(.system(size: 9))
                             .foregroundColor(.red.opacity(0.8))
 
                         Button {
                             SMCService.shared.reconnect()
                         } label: {
-                            Text("Retry Connection")
+                            Text(AppStrings.retryConnection)
                                 .font(.system(size: 10, weight: .bold))
                                 .frame(maxWidth: .infinity)
                         }
@@ -227,7 +227,7 @@ struct SettingsView: View {
                     .background(Color.red.opacity(0.05))
                     .cornerRadius(6)
                 } else {
-                    Text("✅ SMC Interface Active")
+                    Text(AppStrings.smcInterfaceActive)
                         .font(.system(size: 9))
                         .foregroundColor(.secondary)
                 }
@@ -242,8 +242,8 @@ struct SettingsView: View {
                 }
             ) {
                 HStack {
-                    Image(systemName: "power.circle.fill")
-                    Text("Quit Application")
+                    Image(systemName: AppImages.power)
+                    Text(AppStrings.quitApplication)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 2)

@@ -13,16 +13,16 @@ struct ThermalDetailView: View {
     var isEmbedded: Bool = false
 
     var performanceCores: [SensorInfo] {
-        fanViewModel.sensors.filter { $0.name.contains("P-Core") }
+        fanViewModel.sensors.filter { $0.name.contains(AppStrings.pCoreFilter) }
     }
 
     var efficiencyCores: [SensorInfo] {
-        fanViewModel.sensors.filter { $0.name.contains("E-Core") }
+        fanViewModel.sensors.filter { $0.name.contains(AppStrings.eCoreFilter) }
     }
 
     var otherSensors: [SensorInfo] {
         fanViewModel.sensors.filter {
-            !$0.name.contains("P-Core") && !$0.name.contains("E-Core")
+            !$0.name.contains(AppStrings.pCoreFilter) && !$0.name.contains(AppStrings.eCoreFilter)
         }
     }
 
@@ -31,9 +31,9 @@ struct ThermalDetailView: View {
             if !isEmbedded {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Thermal Sensors")
+                        Text(AppStrings.thermalSensors)
                             .font(.headline)
-                        Text("\(fanViewModel.sensors.count) sensors detected")
+                        Text("\(fanViewModel.sensors.count) \(AppStrings.sensorsDetected)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -41,7 +41,7 @@ struct ThermalDetailView: View {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
+                        Image(systemName: AppImages.close)
                             .font(.title2)
                             .foregroundColor(.secondary)
                     }
@@ -52,7 +52,7 @@ struct ThermalDetailView: View {
 
                 Divider()
             } else {
-                Text("THERMAL SENSORS")
+                Text(AppStrings.thermalSensorsUpperCase)
                     .font(.system(size: 10, weight: .black))
                     .foregroundColor(.secondary)
                     .tracking(1)
@@ -64,11 +64,11 @@ struct ThermalDetailView: View {
 
             ScrollView {
                 HStack(alignment: .top, spacing: 1) {
-                    SensorCategoryColumn(title: "P-Cores", sensors: performanceCores, color: .orange)
+                    SensorCategoryColumn(title: AppStrings.pCores, sensors: performanceCores, color: .orange)
                     Divider()
-                    SensorCategoryColumn(title: "E-Cores", sensors: efficiencyCores, color: .green)
+                    SensorCategoryColumn(title: AppStrings.eCores, sensors: efficiencyCores, color: .green)
                     Divider()
-                    SensorCategoryColumn(title: "System", sensors: otherSensors, color: .purple)
+                    SensorCategoryColumn(title: AppStrings.system, sensors: otherSensors, color: .purple)
                 }
             }
         }
@@ -80,7 +80,7 @@ struct SensorCategoryColumn: View {
     let title: String
     let sensors: [SensorInfo]
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 0) {
             Text(title)
@@ -89,9 +89,9 @@ struct SensorCategoryColumn: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
                 .background(color.opacity(0.1))
-            
+
             if sensors.isEmpty {
-                Text("No data")
+                Text(AppStrings.noData)
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding(.vertical, 20)
@@ -104,7 +104,7 @@ struct SensorCategoryColumn: View {
                             .minimumScaleFactor(0.5)
                             .layoutPriority(1)
                         Spacer(minLength: 6)
-                        Text(String(format: "%.1f°C", sensor.temperature))
+                        Text(String(format: AppStrings.temperatureFormat, sensor.temperature))
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
                             .font(.system(size: 12, weight: .medium, design: .monospaced))
