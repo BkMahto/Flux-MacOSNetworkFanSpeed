@@ -18,7 +18,7 @@ struct NetworkSpeedMeterApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
+        Window(AppStrings.appName, id: "dashboard") {
             ContentView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
         }
 

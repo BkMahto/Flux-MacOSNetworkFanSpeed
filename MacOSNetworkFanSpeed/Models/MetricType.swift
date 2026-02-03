@@ -9,8 +9,8 @@ import SwiftUI
 enum MetricType: String, CaseIterable, Identifiable, Codable {
     case download = "Download"
     case upload = "Upload"
-    case fan = "Fan"
     case temperature = "Temp"
+    case fan = "Fan"
 
     var id: String { self.rawValue }
 
@@ -18,11 +18,11 @@ enum MetricType: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .download: return "⏬"
         case .upload: return "⏫"
-        case .fan: return "🌀"
         case .temperature: return "🌡️"
+        case .fan: return "🌀"
         }
     }
-    
+
     var icon: Text {
         switch self {
         case .download:

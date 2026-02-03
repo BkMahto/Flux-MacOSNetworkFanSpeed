@@ -12,6 +12,7 @@ struct SettingsView: View {
     @ObservedObject var networkViewModel: NetworkViewModel
     @ObservedObject var fanViewModel: FanViewModel
     var showWindowButton: Bool = true
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -24,19 +25,7 @@ struct SettingsView: View {
                 // Open main app window
                 if showWindowButton {
                     Button {
-                        // Ensure app is active and in regular mode to show dock/window
-                        NSApp.setActivationPolicy(.regular)
-                        NSApp.unhide(nil)
-                        NSApp.activate(ignoringOtherApps: true)
-
-                        // Try to find the dashboard window
-                        if let window = NSApp.windows.first(where: {
-                            $0.title == AppStrings.appName
-                                || ($0.canBecomeKey && $0.isVisible && !$0.title.isEmpty)
-                        }) {
-                            window.makeKeyAndOrderFront(nil)
-                            window.orderFrontRegardless()
-                        }
+                        openOrFocusDashboard()
                     } label: {
                         Image(systemName: AppImages.window)
                             .foregroundColor(.blue)
@@ -73,18 +62,18 @@ struct SettingsView: View {
                 Divider().opacity(0.3)
 
                 StatRow(
-                    icon: AppImages.fan,
-                    label: fanViewModel.fans.first?.name ?? AppStrings.fan,
-                    value: fanViewModel.primaryFanRPM,
-                    color: .blue
-                )
-                .padding(.vertical, 4)
-
-                StatRow(
                     icon: AppImages.temperature,
                     label: AppStrings.cpuTemp,
                     value: fanViewModel.primaryTemp,
                     color: .orange
+                )
+                .padding(.vertical, 4)
+
+                StatRow(
+                    icon: AppImages.fan,
+                    label: fanViewModel.fans.first?.name ?? AppStrings.fan,
+                    value: fanViewModel.primaryFanRPM,
+                    color: .blue
                 )
                 .padding(.vertical, 4)
             }
@@ -254,6 +243,27 @@ struct SettingsView: View {
         }
         .padding(16)
         .frame(width: 280)
+    }
+
+    private func openOrFocusDashboard() {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+
+        // Close menu bar popover if it's the key window
+        NSApp.keyWindow?.close()
+
+        if let window = NSApp.windows.first(where: {
+            $0.title == AppStrings.appName
+        }) {
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+        } else {
+            NSApp.sendAction(
+                #selector(NSApplication.newWindowForTab(_:)),
+                to: nil,
+                from: nil
+            )
+        }
     }
 }
 

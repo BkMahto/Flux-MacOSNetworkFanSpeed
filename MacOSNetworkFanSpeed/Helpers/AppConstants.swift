@@ -10,6 +10,7 @@ import Foundation
 struct AppStrings {
     // General
     static var appName: String {
+        // $(TARGET_NAME)
         Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
             ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
             ?? "FluxBar"

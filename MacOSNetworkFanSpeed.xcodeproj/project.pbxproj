@@ -14,7 +14,7 @@
 /* Begin PBXFileReference section */
 		C22C2B602F30B13600F46443 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		C22C2B612F30B13600F46443 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		C2BEB9C32F2B504D00DAC1DD /* MacOSNetworkFanSpeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacOSNetworkFanSpeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2BEB9C32F2B504D00DAC1DD /* FluxBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FluxBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -49,7 +49,7 @@
 		C2BEB9C42F2B504D00DAC1DD /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C2BEB9C32F2B504D00DAC1DD /* MacOSNetworkFanSpeed.app */,
+				C2BEB9C32F2B504D00DAC1DD /* FluxBar.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,7 +76,7 @@
 			packageProductDependencies = (
 			);
 			productName = NetworkSpeedMeter;
-			productReference = C2BEB9C32F2B504D00DAC1DD /* MacOSNetworkFanSpeed.app */;
+			productReference = C2BEB9C32F2B504D00DAC1DD /* FluxBar.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -188,6 +188,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -245,6 +246,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -275,9 +277,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = cam.bandan.me.MacOSNetworkFanSpeed;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = FluxBar;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -309,9 +311,9 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = cam.bandan.me.MacOSNetworkFanSpeed;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = FluxBar;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
