@@ -23,7 +23,11 @@ struct NetworkSpeedMeterApp: App {
         }
 
         MenuBarExtra {
-            SettingsView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
+            SettingsView(
+                networkViewModel: networkViewModel,
+                fanViewModel: fanViewModel,
+                showWindowButton: true
+            )
         } label: {
             MenuBarView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
         }

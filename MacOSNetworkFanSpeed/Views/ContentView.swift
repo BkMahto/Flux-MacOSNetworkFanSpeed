@@ -11,299 +11,197 @@ struct ContentView: View {
     @ObservedObject var networkViewModel: NetworkViewModel
     @ObservedObject var fanViewModel: FanViewModel
 
-    var body: some View {
-        VStack(spacing: 24) {
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("System Hub")
-                        .font(.title2)
-                        .fontWeight(.black)
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(SMCService.shared.isConnected ? Color.blue : Color.red)
-                            .frame(width: 6, height: 6)
-                        Text(SMCService.shared.isConnected ? "Hardware Connected" : "Hardware Disconnected")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundColor(.secondary)
-                    }
+    // View Modes
+    enum ViewMode: String, CaseIterable {
+        case mini = "Mini"
+        case standard = "Standard"
+        case expanded = "Pro"
 
-                }
-                Spacer()
-                if fanViewModel.isMonitoring {
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 8, height: 8)
-                        Text("MONITORING")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.green)
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.green.opacity(0.1))
-                    .clipShape(Capsule())
-                }
+        var width: CGFloat {
+            switch self {
+            case .mini: return 350
+            case .standard: return 630  // 350 + 280
+            case .expanded: return 1230  // 350 + 600 + 280
             }
-            .padding(.horizontal, 30)
+        }
 
-            // Single line metric dashboard
-            HStack(spacing: 20) {
-                DashboardMetricCard(
-                    title: "Download",
-                    value: networkViewModel.downloadSpeed,
-                    icon: "arrow.down.circle.fill",
-                    color: .blue
-                )
-                DashboardMetricCard(
-                    title: "Upload",
-                    value: networkViewModel.uploadSpeed,
-                    icon: "arrow.up.circle.fill",
-                    color: .green
-                )
-                DashboardMetricCard(
-                    title: "Fan Speed",
-                    value: fanViewModel.primaryFanRPM,
-                    icon: "fanblades.fill",
-                    color: .indigo
-                )
-                Button {
-                    fanViewModel.isShowingThermalDetails = true
-                } label: {
+        var icon: String {
+            switch self {
+            case .mini: return "rectangle.portrait"
+            case .standard: return "rectangle"
+            case .expanded: return "rectangle.split.3x1"
+            }
+        }
+    }
+
+    @AppStorage("viewMode") private var viewMode: ViewMode = .expanded
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            // Left Column: Metrics Dashboard (Always Visible)
+            VStack(spacing: 24) {
+                // Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("System Hub")
+                            .font(.title2)
+                            .fontWeight(.black)
+                        HStack(spacing: 4) {
+                            Circle()
+                                .fill(SMCService.shared.isConnected ? Color.blue : Color.red)
+                                .frame(width: 6, height: 6)
+                            Text(SMCService.shared.isConnected ? "Hardware Connected" : "Hardware Disconnected")
+                                .font(.system(size: 8, weight: .bold))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Spacer()
+
+                    // View Mode Switcher
+                    HStack(spacing: 0) {
+                        ForEach(ViewMode.allCases, id: \.self) { mode in
+                            Button {
+                                setWindowMode(mode)
+                            } label: {
+                                Image(systemName: mode.icon)
+                                    .font(.system(size: 12, weight: .bold))  // Larger Icon
+                                    .foregroundColor(viewMode == mode ? .white : .secondary)
+                                    .frame(width: 36, height: 26)  // Larger Touch Target
+                                    .background(viewMode == mode ? Color.blue : Color.clear)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .background(Color.primary.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.trailing, 4)
+                }
+                .padding(.horizontal, 30)
+
+                // Metrics Stack
+                VStack(spacing: 20) {
+                    DashboardMetricCard(
+                        title: "Download",
+                        value: networkViewModel.downloadSpeed,
+                        icon: "arrow.down.circle.fill",
+                        color: .blue
+                    )
+                    DashboardMetricCard(
+                        title: "Upload",
+                        value: networkViewModel.uploadSpeed,
+                        icon: "arrow.up.circle.fill",
+                        color: .green
+                    )
+                    DashboardMetricCard(
+                        title: "Fan",
+                        value: fanViewModel.primaryFanRPM,
+                        icon: "fanblades.fill",
+                        color: .indigo
+                    )
                     DashboardMetricCard(
                         title: "System Temp",
                         value: fanViewModel.primaryTemp,
                         icon: "thermometer.medium",
-                        color: .orange
+                        color: .orange,
+                        showInfoButton: viewMode != .expanded,
+                        action: {
+                            fanViewModel.isShowingThermalDetails = true
+                        }
                     )
                 }
-                .buttonStyle(PlainButtonStyle())
+                .padding(.horizontal, 30)
+
+                Spacer()
             }
-            .padding(.horizontal, 30)
+            .padding(.vertical, 30)
+            .frame(width: 350)
 
-            Divider().opacity(0.3).padding(.horizontal, 30)
+            // Middle Column: Thermal Details (Only in Expanded mode)
+            if viewMode == .expanded {
+                Divider()
+                VStack(spacing: 0) {
+                    ThermalDetailView(fanViewModel: fanViewModel, isEmbedded: true)
+                }
+                .padding(.horizontal, 10)
+                .frame(width: 600)
+            }
 
-            // Settings Section
-            SettingsView(networkViewModel: networkViewModel, fanViewModel: fanViewModel)
+            // Right Column: Settings Panel (Hidden in Mini mode)
+            if viewMode != .mini {
+                Divider()
+                VStack(spacing: 0) {
+                    ScrollView {
+                        SettingsView(
+                            networkViewModel: networkViewModel,
+                            fanViewModel: fanViewModel,
+                            showWindowButton: false
+                        )
+                    }
+                }
+                .frame(width: 280)
+            }
         }
-        .padding(.vertical, 30)
-        .frame(minWidth: 900, minHeight: 500)
+        .frame(width: viewMode.width, height: 650)  // Fixed size
         .onAppear {
-            // Show Dock icon when window appears
-            NSApplication.shared.setActivationPolicy(.regular)
-            NSApplication.shared.activate(ignoringOtherApps: true)
+            // Ensure app is activated and window is brought to front
+            NSApp.setActivationPolicy(.regular)
+            NSApp.unhide(nil)
+            NSApp.activate(ignoringOtherApps: true)
+
+            // Explicitly set title and bring to front with small delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let window = NSApp.windows.first(where: { $0.canBecomeKey }) {
+                    window.title = "System Hub"
+                    window.makeKeyAndOrderFront(nil)
+                    window.orderFrontRegardless()
+                    NSApp.activate(ignoringOtherApps: true)
+
+                    // Enforce fixed size logic
+                    setupWindow(window, mode: .standard)
+                }
+            }
         }
         .onDisappear {
-            // Hide Dock icon when window closes (becomes an accessory app)
+            // Hide Dock icon when window closes
             NSApplication.shared.setActivationPolicy(.accessory)
         }
         .sheet(isPresented: $fanViewModel.isShowingThermalDetails) {
             ThermalDetailView(fanViewModel: fanViewModel)
         }
     }
-}
 
-struct ThermalDetailView: View {
-    @ObservedObject var fanViewModel: FanViewModel
-    @Environment(\.dismiss) var dismiss
+    // Helper to resize window programmatically
+    private func setWindowMode(_ mode: ViewMode) {
+        withAnimation {
+            viewMode = mode
+        }
 
-    var performanceCores: [SensorInfo] {
-        fanViewModel.sensors.filter { $0.name.contains("P-Core") }
-    }
-
-    var efficiencyCores: [SensorInfo] {
-        fanViewModel.sensors.filter { $0.name.contains("E-Core") }
-    }
-
-    var otherSensors: [SensorInfo] {
-        fanViewModel.sensors.filter {
-            !$0.name.contains("P-Core") && !$0.name.contains("E-Core")
+        if let window = NSApp.windows.first(where: {
+            $0.isVisible && ($0.title == "System Hub" || $0.canBecomeKey)
+        }) {
+            setupWindow(window, mode: mode)
         }
     }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            // Title Header
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Thermal Sensors")
-                        .font(.headline)
-                    Text("\(fanViewModel.sensors.count) sensors detected")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-            .padding()
-            .background(Color(NSColor.windowBackgroundColor))
+    private func setupWindow(_ window: NSWindow, mode: ViewMode) {
+        // Disable manual resizing by making min/max size the same
+        let newSize = CGSize(width: mode.width, height: 650)
+        var frame = window.frame
+        frame.origin.y += (frame.size.height - newSize.height)  // Keep top alignment? (macOS coords start bottom-left)
+        // Actually, keeping the top-left corner stable is usually better, but handling origin.y is tricky without screen info
+        // Simple resize from bottom-left or simply setting proper frame:
 
-            Divider()
+        window.setFrame(NSRect(origin: frame.origin, size: newSize), display: true, animate: true)
 
-            // Categorized Sensor Columns
-            ScrollView {
-                HStack(alignment: .top, spacing: 1) {
-                    // Performance Cores Column
-                    SensorCategoryColumn(
-                        title: "P-Core Sensors",
-                        sensors: performanceCores,
-                        color: .orange
-                    )
+        // Lock the size
+        window.minSize = newSize
+        window.maxSize = newSize
 
-                    Divider()
-
-                    // Efficiency Cores Column
-                    SensorCategoryColumn(
-                        title: "E-Core Sensors",
-                        sensors: efficiencyCores,
-                        color: .green
-                    )
-
-                    Divider()
-
-                    // GPU/SSD/System Column
-                    SensorCategoryColumn(
-                        title: "GPU / SSD / System",
-                        sensors: otherSensors,
-                        color: .purple
-                    )
-                }
-            }
-        }
-        .frame(width: 800, height: 600)
-    }
-}
-
-struct SensorCategoryColumn: View {
-    let title: String
-    let sensors: [SensorInfo]
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 0) {
-            // Category Header
-            Text(title)
-                .font(.system(size: 11, weight: .bold))
-                .foregroundColor(color)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(color.opacity(0.1))
-
-            if sensors.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: "thermometer")
-                        .font(.system(size: 24))
-                        .foregroundColor(.secondary.opacity(0.3))
-                    Text("No sensors")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 40)
-            } else {
-                ForEach(sensors) { sensor in
-                    HStack {
-                        Label {
-                            Text(sensor.name)
-                                .font(.system(size: 12))
-                        } icon: {
-                            Image(systemName: iconForSensor(sensor.name))
-                                .foregroundColor(colorForSensor(sensor.name))
-                                .font(.system(size: 11))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Text(String(format: "%.1f°C", sensor.temperature))
-                            .font(.system(size: 12, weight: .medium, design: .monospaced))
-                            .foregroundColor(temperatureColor(sensor.temperature))
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.primary.opacity(0.02))
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func iconForSensor(_ name: String) -> String {
-        if name.contains("CPU") || name.contains("Performance") || name.contains("Efficiency") {
-            return "cpu"
-        }
-        if name.contains("GPU") { return "memorychip" }
-        if name.contains("Airport") { return "wifi" }
-        if name.contains("SSD") || name.contains("APPLE SSD") { return "internaldrive" }
-        if name.contains("Battery") { return "battery.100" }
-        if name.contains("Ambient") { return "sun.max" }
-        if name.contains("Power") { return "bolt.fill" }
-        return "thermometer"
-    }
-
-    private func colorForSensor(_ name: String) -> Color {
-        if name.contains("Performance") { return .orange }
-        if name.contains("Efficiency") { return .green }
-        if name.contains("GPU") { return .purple }
-        if name.contains("SSD") || name.contains("APPLE SSD") { return .cyan }
-        if name.contains("Airport") { return .blue }
-        if name.contains("Power") { return .yellow }
-        return .secondary
-    }
-
-    private func temperatureColor(_ temp: Double) -> Color {
-        if temp > 80 { return .red }
-        if temp > 60 { return .orange }
-        return .primary
-    }
-}
-
-struct DashboardMetricCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                    .font(.title3)
-                Spacer()
-                Text(title)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.secondary)
-                    .tracking(1)
-            }
-
-            Text(value)
-                .font(.system(size: 24, weight: .bold, design: .monospaced))
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity)
-        .background(Color(NSColor.windowBackgroundColor).opacity(0.5))
-        .background(.ultraThinMaterial)
-        .cornerRadius(20)
-        .shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(
-                    LinearGradient(
-                        colors: [color.opacity(0.2), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-        )
+        // Optional: Remove resizable style mask to completely prevent drag cursor
+        window.styleMask.remove(.resizable)
+        // Note: Removing .resizable might make the zoom button disabled, which is fine.
+        window.standardWindowButton(.zoomButton)?.isEnabled = false
     }
 }
 

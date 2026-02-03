@@ -11,6 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var networkViewModel: NetworkViewModel
     @ObservedObject var fanViewModel: FanViewModel
+    var showWindowButton: Bool = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -21,21 +22,29 @@ struct SettingsView: View {
                 Spacer()
 
                 // Open main app window
-                Button {
-                    NSApp.activate(ignoringOtherApps: true)
-                    // Find window by title or identifier
-                    if let window = NSApp.windows.first(where: { $0.title == "System Hub" }) {
-                        window.makeKeyAndOrderFront(nil)
-                    } else if let window = NSApp.windows.first(where: { $0.canBecomeKey }) {
-                        window.makeKeyAndOrderFront(nil)
+                if showWindowButton {
+                    Button {
+                        // Ensure app is active and in regular mode to show dock/window
+                        NSApp.setActivationPolicy(.regular)
+                        NSApp.unhide(nil)
+                        NSApp.activate(ignoringOtherApps: true)
+
+                        // Try to find the dashboard window
+                        if let window = NSApp.windows.first(where: {
+                            $0.title == "System Hub"
+                                || ($0.canBecomeKey && $0.isVisible && !$0.title.isEmpty)
+                        }) {
+                            window.makeKeyAndOrderFront(nil)
+                            window.orderFrontRegardless()
+                        }
+                    } label: {
+                        Image(systemName: "macwindow")
+                            .foregroundColor(.blue)
+                            .font(.title3)
                     }
-                } label: {
-                    Image(systemName: "macwindow")
-                        .foregroundColor(.blue)
-                        .font(.title3)
+                    .buttonStyle(.plain)
+                    .help("Open System Hub")
                 }
-                .buttonStyle(.plain)
-                .help("Open System Hub")
 
                 Image(systemName: "gauge.with.dots.needle.bottom.50percent")
                     .foregroundColor(.secondary)
