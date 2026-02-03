@@ -9,7 +9,11 @@ import Foundation
 
 struct AppStrings {
     // General
-    static let appName = "Flux"
+    static var appName: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? "FluxBar"
+    }
     static let systemMonitor = "System Monitor"
 
     // Metrics
