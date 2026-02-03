@@ -1,6 +1,6 @@
 //
 //  MetricType.swift
-//  NetworkSpeedMeter
+//  MacOSNetworkFanSpeed
 //
 
 import SwiftUI

@@ -1,6 +1,6 @@
 //
 //  SMCSensorKeys.swift
-//  NetworkSpeedMeter
+//  MacOSNetworkFanSpeed
 //
 //  Created by Bandan.K on 02/02/26.
 //

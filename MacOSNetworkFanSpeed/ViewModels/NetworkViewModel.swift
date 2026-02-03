@@ -1,6 +1,6 @@
 //
 //  NetworkViewModel.swift
-//  NetworkSpeedMeter
+//  MacOSNetworkFanSpeed
 //
 //  Created by Bandan.K on 29/01/26.
 //

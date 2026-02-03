@@ -14,13 +14,13 @@
 /* Begin PBXFileReference section */
 		C22C2B602F30B13600F46443 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		C22C2B612F30B13600F46443 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		C2BEB9C32F2B504D00DAC1DD /* NetworkSpeedMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NetworkSpeedMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2BEB9C32F2B504D00DAC1DD /* MacOSNetworkFanSpeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacOSNetworkFanSpeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C2BEB9C52F2B504D00DAC1DD /* NetworkSpeedMeter */ = {
+		C2BEB9C52F2B504D00DAC1DD /* MacOSNetworkFanSpeed */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = NetworkSpeedMeter;
+			path = MacOSNetworkFanSpeed;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -41,7 +41,7 @@
 			children = (
 				C22C2B602F30B13600F46443 /* LICENSE */,
 				C22C2B612F30B13600F46443 /* README.md */,
-				C2BEB9C52F2B504D00DAC1DD /* NetworkSpeedMeter */,
+				C2BEB9C52F2B504D00DAC1DD /* MacOSNetworkFanSpeed */,
 				C2BEB9C42F2B504D00DAC1DD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -49,7 +49,7 @@
 		C2BEB9C42F2B504D00DAC1DD /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C2BEB9C32F2B504D00DAC1DD /* NetworkSpeedMeter.app */,
+				C2BEB9C32F2B504D00DAC1DD /* MacOSNetworkFanSpeed.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -57,9 +57,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C2BEB9C22F2B504D00DAC1DD /* NetworkSpeedMeter */ = {
+		C2BEB9C22F2B504D00DAC1DD /* MacOSNetworkFanSpeed */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C2BEB9CE2F2B504F00DAC1DD /* Build configuration list for PBXNativeTarget "NetworkSpeedMeter" */;
+			buildConfigurationList = C2BEB9CE2F2B504F00DAC1DD /* Build configuration list for PBXNativeTarget "MacOSNetworkFanSpeed" */;
 			buildPhases = (
 				C2BEB9BF2F2B504D00DAC1DD /* Sources */,
 				C2BEB9C02F2B504D00DAC1DD /* Frameworks */,
@@ -70,13 +70,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				C2BEB9C52F2B504D00DAC1DD /* NetworkSpeedMeter */,
+				C2BEB9C52F2B504D00DAC1DD /* MacOSNetworkFanSpeed */,
 			);
-			name = NetworkSpeedMeter;
+			name = MacOSNetworkFanSpeed;
 			packageProductDependencies = (
 			);
 			productName = NetworkSpeedMeter;
-			productReference = C2BEB9C32F2B504D00DAC1DD /* NetworkSpeedMeter.app */;
+			productReference = C2BEB9C32F2B504D00DAC1DD /* MacOSNetworkFanSpeed.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -94,7 +94,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C2BEB9BE2F2B504D00DAC1DD /* Build configuration list for PBXProject "NetworkSpeedMeter" */;
+			buildConfigurationList = C2BEB9BE2F2B504D00DAC1DD /* Build configuration list for PBXProject "MacOSNetworkFanSpeed" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -108,7 +108,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C2BEB9C22F2B504D00DAC1DD /* NetworkSpeedMeter */,
+				C2BEB9C22F2B504D00DAC1DD /* MacOSNetworkFanSpeed */,
 			);
 		};
 /* End PBXProject section */
@@ -325,7 +325,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C2BEB9BE2F2B504D00DAC1DD /* Build configuration list for PBXProject "NetworkSpeedMeter" */ = {
+		C2BEB9BE2F2B504D00DAC1DD /* Build configuration list for PBXProject "MacOSNetworkFanSpeed" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C2BEB9CC2F2B504F00DAC1DD /* Debug */,
@@ -334,7 +334,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C2BEB9CE2F2B504F00DAC1DD /* Build configuration list for PBXNativeTarget "NetworkSpeedMeter" */ = {
+		C2BEB9CE2F2B504F00DAC1DD /* Build configuration list for PBXNativeTarget "MacOSNetworkFanSpeed" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C2BEB9CF2F2B504F00DAC1DD /* Debug */,

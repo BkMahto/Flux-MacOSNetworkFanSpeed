@@ -1,4 +1,4 @@
-# NetworkSpeedMeter
+# MacOSNetworkFanSpeed
 
 A macOS menu bar application that monitors network speed, fan RPM, and system temperatures with real-time SMC (System Management Controller) integration.
 
