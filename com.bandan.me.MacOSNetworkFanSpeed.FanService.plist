@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" 
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Your helper bundle identifier -->
+    <key>Label</key>
+    <string>com.bandan.me.MacOSNetworkFanSpeed.FanService</string>
+
+    <!-- Mach service used for XPC communication -->
+    <key>MachServices</key>
+    <dict>
+        <key>com.bandan.me.MacOSNetworkFanSpeed.FanService</key>
+        <true/>
+    </dict>
+
+    <!-- ProgramArguments can usually be left empty; launchd fills this -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>$(EXECUTABLE_PATH)</string>
+    </array>
+
+    <!-- Keep the helper running only when requested -->
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
