@@ -165,4 +165,11 @@ final class FanViewModel: ObservableObject {
         return String(format: "%.0f°C", avgTemp)
     }
 
+    var primaryGPUTemp: String {
+        let gpuSensors = sensors.filter { $0.name.contains("GPU") }
+        guard !gpuSensors.isEmpty else { return "0°C" }
+        let avgTemp = gpuSensors.reduce(0.0) { $0 + $1.temperature } / Double(gpuSensors.count)
+        return String(format: "%.0f°C", avgTemp)
+    }
+
 }

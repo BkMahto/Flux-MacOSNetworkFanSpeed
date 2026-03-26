@@ -11,11 +11,12 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var networkViewModel: NetworkViewModel
     @ObservedObject var fanViewModel: FanViewModel
+    @ObservedObject var systemViewModel: SystemStatsViewModel
     var showWindowButton: Bool = true
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack {
                 Text(AppStrings.systemMonitor)
@@ -87,6 +88,69 @@ struct SettingsView: View {
                     .stroke(Color.primary.opacity(0.08), lineWidth: 1)
             )
 
+            // System stats (CPU, Memory, Disk, Battery, GPU)
+            VStack(alignment: .leading, spacing: 10) {
+                Label("System Metrics", systemImage: AppImages.cpu)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+
+                let gridColumns = [GridItem(.flexible()), GridItem(.flexible())]
+                LazyVGrid(columns: gridColumns, alignment: .leading, spacing: 8) {
+                    SystemMetricTile(
+                        icon: AppImages.cpu,
+                        title: "CPU",
+                        value: systemViewModel.cpuUsageText,
+                        accent: .purple
+                    )
+                    SystemMetricTile(
+                        icon: "memorychip",
+                        title: "Memory",
+                        value: systemViewModel.memoryUsageText,
+                        accent: .indigo
+                    )
+                    SystemMetricTile(
+                        icon: "arrow.2.circlepath.circle",
+                        title: "Swap",
+                        value: systemViewModel.swapUsageText,
+                        accent: .gray
+                    )
+                    SystemMetricTile(
+                        icon: "internaldrive",
+                        title: "Disk Free",
+                        value: systemViewModel.diskFreeText,
+                        accent: .blue
+                    )
+                    SystemMetricTile(
+                        icon: "internaldrive",
+                        title: "Disk IO",
+                        value: systemViewModel.diskIOText,
+                        accent: .blue
+                    )
+                    SystemMetricTile(
+                        icon: AppImages.power,
+                        title: "Battery",
+                        value: systemViewModel.batteryStatusText,
+                        accent: .green
+                    )
+                    SystemMetricTile(
+                        icon: AppImages.temperature,
+                        title: "GPU Temp",
+                        value: fanViewModel.primaryGPUTemp,
+                        accent: .orange
+                    )
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.primary.opacity(0.03))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            )
+
             // Menu Bar Metrics Selection
             VStack(alignment: .leading, spacing: 8) {
                 Label(AppStrings.menuBarMetrics, systemImage: AppImages.checklist)
@@ -139,50 +203,52 @@ struct SettingsView: View {
 
             Divider().opacity(0.3)
 
-            // Fan Control Presets
-            VStack(alignment: .leading, spacing: 8) {
-                Label(AppStrings.fanControlPreset, systemImage: AppImages.fanSettings)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.secondary)
+            /*
+             Fan Control Presets are currently disabled because the UI flow is not working reliably.
+             Keeping this block commented so it’s easy to re-enable later without losing the wiring.
 
-                Picker("", selection: $fanViewModel.activePreset) {
-                    Text(AppStrings.presetAutomatic).tag("Automatic")
-                    Text(AppStrings.presetManual).tag("Manual")
-                    Text(AppStrings.presetFullBlast).tag("Full Blast")
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
+             VStack(alignment: .leading, spacing: 8) {
+                 Label(AppStrings.fanControlPreset, systemImage: AppImages.fanSettings)
+                     .font(.system(size: 10, weight: .bold))
+                     .foregroundColor(.secondary)
 
-                if fanViewModel.activePreset == "Manual" {
-                    ForEach(fanViewModel.fans) { fan in
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text("\(fan.name)")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Text("\(Int(fan.targetRPM ?? fan.currentRPM)) \(AppStrings.rpmUnit)")
-                                    .font(.system(size: 10, design: .monospaced))
-                            }
+                 Picker("", selection: $fanViewModel.activePreset) {
+                     Text(AppStrings.presetAutomatic).tag("Automatic")
+                     Text(AppStrings.presetManual).tag("Manual")
+                     Text(AppStrings.presetFullBlast).tag("Full Blast")
+                 }
+                 .pickerStyle(.segmented)
+                 .labelsHidden()
 
-                            Slider(
-                                value: Binding(
-                                    get: { Double(fan.targetRPM ?? fan.currentRPM) },
-                                    set: { newValue in
-                                        fanViewModel.setManualRPM(fanID: fan.id, rpm: Int(newValue))
-                                    }
-                                ),
-                                in: Double(fan.minRPM)...Double(fan.maxRPM),
-                                step: 100
-                            )
-                            .controlSize(.small)
-                        }
-                        .padding(.top, 4)
-                    }
-                }
-            }
+                 if fanViewModel.activePreset == "Manual" {
+                     ForEach(fanViewModel.fans) { fan in
+                         VStack(alignment: .leading, spacing: 4) {
+                             HStack {
+                                 Text("\(fan.name)")
+                                     .font(.system(size: 10))
+                                     .foregroundColor(.secondary)
+                                 Spacer()
+                                 Text("\(Int(fan.targetRPM ?? fan.currentRPM)) \(AppStrings.rpmUnit)")
+                                     .font(.system(size: 10, design: .monospaced))
+                             }
 
-            Divider().opacity(0.3)
+                             Slider(
+                                 value: Binding(
+                                     get: { Double(fan.targetRPM ?? fan.currentRPM) },
+                                     set: { newValue in
+                                         fanViewModel.setManualRPM(fanID: fan.id, rpm: Int(newValue))
+                                     }
+                                 ),
+                                 in: Double(fan.minRPM)...Double(fan.maxRPM),
+                                 step: 100
+                             )
+                             .controlSize(.small)
+                         }
+                         .padding(.top, 4)
+                     }
+                 }
+             }
+             */
 
             // Hardware Diagnostics
             VStack(alignment: .leading, spacing: 8) {
@@ -246,12 +312,18 @@ struct SettingsView: View {
         .onAppear {
             networkViewModel.isSettingsVisible = true
             fanViewModel.isSettingsVisible = true
+            systemViewModel.isSettingsVisible = true
+            systemViewModel.refreshInterval = networkViewModel.refreshInterval
             fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
         }
         .onDisappear {
             networkViewModel.isSettingsVisible = false
             fanViewModel.isSettingsVisible = false
+            systemViewModel.isSettingsVisible = false
             fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
+        }
+        .onChange(of: networkViewModel.refreshInterval) { _, newValue in
+            systemViewModel.refreshInterval = newValue
         }
     }
 
@@ -294,6 +366,39 @@ private struct StatRow: View {
             Text(value)
                 .font(.system(.body, design: .monospaced))
                 .fontWeight(.bold)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
+    }
+}
+
+private struct SystemMetricTile: View {
+    let icon: String
+    let title: String
+    let value: String
+    let accent: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .foregroundColor(accent)
+                    .font(.system(size: 11, weight: .bold))
+                Text(title)
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(.secondary)
+            }
+
+            Text(value)
+                .font(.system(.body, design: .monospaced))
+                .fontWeight(.bold)
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(6)
+        .background(Color.primary.opacity(0.02))
+        .cornerRadius(8)
     }
 }

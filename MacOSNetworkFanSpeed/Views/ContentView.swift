@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var networkViewModel: NetworkViewModel
     @ObservedObject var fanViewModel: FanViewModel
+    @ObservedObject var systemViewModel: SystemStatsViewModel
 
     // View Modes
     enum ViewMode: String, CaseIterable {
@@ -138,6 +139,7 @@ struct ContentView: View {
                         SettingsView(
                             networkViewModel: networkViewModel,
                             fanViewModel: fanViewModel,
+                            systemViewModel: systemViewModel,
                             showWindowButton: false
                         )
                     }
@@ -151,6 +153,7 @@ struct ContentView: View {
             networkViewModel.isDashboardVisible = true
             fanViewModel.isDashboardVisible = true
             fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
+            systemViewModel.isDashboardVisible = true
 
             // Ensure app is activated and window is brought to front
             NSApp.setActivationPolicy(.regular)
@@ -175,6 +178,7 @@ struct ContentView: View {
             networkViewModel.isDashboardVisible = false
             fanViewModel.isDashboardVisible = false
             fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
+            systemViewModel.isDashboardVisible = false
             NSApplication.shared.setActivationPolicy(.accessory)
         }
         .sheet(isPresented: $fanViewModel.isShowingThermalDetails) {
@@ -217,5 +221,9 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(networkViewModel: NetworkViewModel(), fanViewModel: FanViewModel())
+    ContentView(
+        networkViewModel: NetworkViewModel(),
+        fanViewModel: FanViewModel(),
+        systemViewModel: SystemStatsViewModel()
+    )
 }
