@@ -243,6 +243,16 @@ struct SettingsView: View {
         }
         .padding(16)
         .frame(width: 280)
+        .onAppear {
+            networkViewModel.isSettingsVisible = true
+            fanViewModel.isSettingsVisible = true
+            fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
+        }
+        .onDisappear {
+            networkViewModel.isSettingsVisible = false
+            fanViewModel.isSettingsVisible = false
+            fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
+        }
     }
 
     private func openOrFocusDashboard() {

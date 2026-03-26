@@ -15,12 +15,17 @@ struct MenuBarView: View {
     var body: some View {
         let metrics = MetricType.allCases.filter { networkViewModel.enabledMetrics.contains($0) }
 
-        if metrics.isEmpty {
-            Image(systemName: AppImages.rocket)
-        } else {
-            let combinedImage = renderCombinedMetricsImage(metrics)
-            Image(nsImage: combinedImage)
-        }
+            Group {
+                if metrics.isEmpty {
+                    Image(systemName: AppImages.rocket)
+                } else {
+                    let combinedImage = renderCombinedMetricsImage(metrics)
+                    Image(nsImage: combinedImage)
+                }
+            }
+            .onReceive(networkViewModel.$enabledMetrics) { enabledMetrics in
+                fanViewModel.updateMonitoring(menuBarEnabledMetrics: enabledMetrics)
+            }
     }
 
     private func renderCombinedMetricsImage(_ metrics: [MetricType]) -> NSImage {

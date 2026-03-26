@@ -24,14 +24,26 @@ final class NetworkViewModel: ObservableObject {
         didSet {
             let encoded = enabledMetrics.map { $0.rawValue }
             UserDefaults.standard.set(encoded, forKey: "EnabledMetrics")
+            updateMonitoring()
         }
     }
 
     @Published var refreshInterval: Double = 1.0 {
         didSet {
             UserDefaults.standard.set(refreshInterval, forKey: "RefreshInterval")
-            restartTimer()
+            // Only restart if we're actively monitoring.
+            if isMonitoring {
+                restartTimer()
+            }
         }
+    }
+
+    // These are set by views when the dashboard/settings are visible.
+    @Published var isDashboardVisible: Bool = false {
+        didSet { updateMonitoring() }
+    }
+    @Published var isSettingsVisible: Bool = false {
+        didSet { updateMonitoring() }
     }
 
     // MARK: - Private Properties
@@ -40,6 +52,7 @@ final class NetworkViewModel: ObservableObject {
     private var lastStats: NetworkMonitor.InterfaceStats?
     private var lastTimestamp: Date?
     private var timer: AnyCancellable?
+    private var isMonitoring: Bool = false
 
     // MARK: - Initializer
 
@@ -53,12 +66,14 @@ final class NetworkViewModel: ObservableObject {
         let interval = UserDefaults.standard.double(forKey: "RefreshInterval")
         self.refreshInterval = interval > 0 ? interval : 1.0
 
-        startMonitoring()
+        updateMonitoring()
     }
 
     // MARK: - Monitoring Logic
 
     func startMonitoring() {
+        guard !isMonitoring else { return }
+        isMonitoring = true
         restartTimer()
     }
 
@@ -69,6 +84,21 @@ final class NetworkViewModel: ObservableObject {
             .sink { [weak self] _ in
                 self?.updateSpeed()
             }
+    }
+
+    private func updateMonitoring() {
+        let needsDownload = enabledMetrics.contains(.download)
+        let needsUpload = enabledMetrics.contains(.upload)
+        let shouldMonitor = isDashboardVisible || isSettingsVisible || needsDownload || needsUpload
+
+        if shouldMonitor {
+            startMonitoring()
+        } else {
+            guard isMonitoring else { return }
+            isMonitoring = false
+            timer?.cancel()
+            timer = nil
+        }
     }
 
     private func updateSpeed() {

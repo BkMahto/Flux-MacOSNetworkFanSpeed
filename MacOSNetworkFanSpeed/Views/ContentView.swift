@@ -147,6 +147,11 @@ struct ContentView: View {
         }
         .frame(width: viewMode.width, height: 650)  // Fixed size
         .onAppear {
+            // Mark dashboard as visible so view models can start polling.
+            networkViewModel.isDashboardVisible = true
+            fanViewModel.isDashboardVisible = true
+            fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
+
             // Ensure app is activated and window is brought to front
             NSApp.setActivationPolicy(.regular)
             NSApp.unhide(nil)
@@ -167,6 +172,9 @@ struct ContentView: View {
         }
         .onDisappear {
             // Hide Dock icon when window closes
+            networkViewModel.isDashboardVisible = false
+            fanViewModel.isDashboardVisible = false
+            fanViewModel.updateMonitoring(menuBarEnabledMetrics: networkViewModel.enabledMetrics)
             NSApplication.shared.setActivationPolicy(.accessory)
         }
         .sheet(isPresented: $fanViewModel.isShowingThermalDetails) {

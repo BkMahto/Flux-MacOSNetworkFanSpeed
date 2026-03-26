@@ -22,12 +22,23 @@ final class FanViewModel: ObservableObject {
         }
     }
 
+    // These are set by views when the dashboard/settings are visible.
+    @Published var isDashboardVisible: Bool = false {
+        didSet { updateMonitoring(menuBarEnabledMetrics: lastMenuBarEnabledMetrics) }
+    }
+    @Published var isSettingsVisible: Bool = false {
+        didSet { updateMonitoring(menuBarEnabledMetrics: lastMenuBarEnabledMetrics) }
+    }
+
+    private var lastMenuBarEnabledMetrics: Set<MetricType> = []
+
     @Published var isMonitoring: Bool = false {
         didSet {
             if isMonitoring {
                 startMonitoring()
             } else {
                 timer?.cancel()
+                timer = nil
             }
 
         }
@@ -42,13 +53,22 @@ final class FanViewModel: ObservableObject {
     init() {
         let savedPreset = UserDefaults.standard.string(forKey: "FanPreset") ?? "Automatic"
         self._activePreset = Published(wrappedValue: savedPreset)
-        self._isMonitoring = Published(wrappedValue: true)
+        self._isMonitoring = Published(wrappedValue: false)
 
-        // Defer side effects until next run loop to avoid publishing warnings during init
+        // Start monitoring only if the menu bar (or visible UI) needs it.
+        let enabledMetrics = FanViewModel.loadEnabledMetricsFromDefaults()
         DispatchQueue.main.async { [weak self] in
-            self?.startMonitoring()
-            self?.applyPreset()
+            guard let self = self else { return }
+            self.lastMenuBarEnabledMetrics = enabledMetrics
+            self.updateMonitoring(menuBarEnabledMetrics: enabledMetrics)
         }
+    }
+
+    private static func loadEnabledMetricsFromDefaults() -> Set<MetricType> {
+        guard let savedMetrics = UserDefaults.standard.stringArray(forKey: "EnabledMetrics") else {
+            return []
+        }
+        return Set(savedMetrics.compactMap { MetricType(rawValue: $0) })
     }
 
     private func applyPreset() {
@@ -89,6 +109,23 @@ final class FanViewModel: ObservableObject {
                 self?.updateStats()
             }
         updateStats()  // Initial update
+    }
+
+    /// Updates whether fan/sensor polling should be running.
+    /// - Parameter menuBarEnabledMetrics: Metrics enabled in the menu bar popover.
+    func updateMonitoring(menuBarEnabledMetrics: Set<MetricType>) {
+        lastMenuBarEnabledMetrics = menuBarEnabledMetrics
+
+        let menuBarNeedsFanOrTemp =
+            menuBarEnabledMetrics.contains(.fan) || menuBarEnabledMetrics.contains(.temperature)
+
+        let shouldMonitor =
+            isDashboardVisible || isSettingsVisible || menuBarNeedsFanOrTemp
+
+        // Prevent re-creating timers if the value didn't change.
+        if shouldMonitor != isMonitoring {
+            isMonitoring = shouldMonitor
+        }
     }
 
     func updateStats() {
