@@ -11,6 +11,7 @@ struct ThermalDetailView: View {
     @ObservedObject var fanViewModel: FanViewModel
     @Environment(\.dismiss) var dismiss
     var isEmbedded: Bool = false
+    @StateObject private var cpuUsageViewModel = CPUCoreUsageViewModel()
 
     var performanceCores: [SensorInfo] {
         fanViewModel.sensors.filter { $0.name.contains(AppStrings.pCoreFilter) }
@@ -64,15 +65,40 @@ struct ThermalDetailView: View {
 
             ScrollView {
                 HStack(alignment: .top, spacing: 1) {
-                    SensorCategoryColumn(title: AppStrings.pCores, sensors: performanceCores, color: .orange)
+                    SensorCategoryColumn(
+                        title: AppStrings.pCores,
+                        sensors: performanceCores,
+                        color: .orange,
+                        cpuUsageViewModel: cpuUsageViewModel,
+                        cpuBaseIndex: 0
+                    )
                     Divider()
-                    SensorCategoryColumn(title: AppStrings.eCores, sensors: efficiencyCores, color: .green)
+                    SensorCategoryColumn(
+                        title: AppStrings.eCores,
+                        sensors: efficiencyCores,
+                        color: .green,
+                        cpuUsageViewModel: cpuUsageViewModel,
+                        cpuBaseIndex: performanceCores.count
+                    )
                     Divider()
-                    SensorCategoryColumn(title: AppStrings.system, sensors: otherSensors, color: .purple)
+                    SensorCategoryColumn(
+                        title: AppStrings.system,
+                        sensors: otherSensors,
+                        color: .purple,
+                        cpuUsageViewModel: nil,
+                        cpuBaseIndex: nil
+                    )
                 }
             }
         }
         .frame(width: isEmbedded ? nil : 700, height: isEmbedded ? nil : 500)
+        .onAppear {
+            cpuUsageViewModel.refreshInterval = 1.0
+            cpuUsageViewModel.start()
+        }
+        .onDisappear {
+            cpuUsageViewModel.stop()
+        }
     }
 }
 
@@ -80,6 +106,8 @@ struct SensorCategoryColumn: View {
     let title: String
     let sensors: [SensorInfo]
     let color: Color
+    let cpuUsageViewModel: CPUCoreUsageViewModel?
+    let cpuBaseIndex: Int?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -96,7 +124,7 @@ struct SensorCategoryColumn: View {
                     .foregroundColor(.secondary)
                     .padding(.vertical, 20)
             } else {
-                ForEach(sensors) { sensor in
+                ForEach(Array(sensors.enumerated()), id: \.element.id) { index, sensor in
                     HStack {
                         Text(sensor.name)
                             .font(.system(size: 12, weight: .medium))
@@ -104,6 +132,12 @@ struct SensorCategoryColumn: View {
                             .minimumScaleFactor(0.5)
                             .layoutPriority(1)
                         Spacer(minLength: 6)
+                        if let cpuUsageViewModel, let cpuBaseIndex, let usage = cpuUsageViewModel.usagePercentText(coreIndex: cpuBaseIndex + index) {
+                            Text(usage)
+                                .foregroundColor(.secondary)
+                                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                .frame(minWidth: 40, alignment: .trailing)
+                        }
                         Text(String(format: AppStrings.temperatureFormat, sensor.temperature))
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)

@@ -12,31 +12,6 @@ struct ContentView: View {
     @ObservedObject var fanViewModel: FanViewModel
     @ObservedObject var systemViewModel: SystemStatsViewModel
 
-    // View Modes
-    enum ViewMode: String, CaseIterable {
-        case mini = "Mini"
-        case standard = "Standard"
-        case expanded = "Pro"
-
-        var width: CGFloat {
-            switch self {
-            case .mini: return 350
-            case .standard: return 630  // 350 + 280
-            case .expanded: return 1230  // 350 + 600 + 280
-            }
-        }
-
-        var icon: String {
-            switch self {
-            case .mini: return AppImages.modeMini
-            case .standard: return AppImages.modeStandard
-            case .expanded: return AppImages.modeExpanded
-            }
-        }
-    }
-
-    @AppStorage("viewMode") private var viewMode: ViewMode = .expanded
-
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             // Left Column: Metrics Dashboard (Always Visible)
@@ -61,25 +36,6 @@ struct ContentView: View {
                     }
 
                     Spacer()
-
-                    // View Mode Switcher
-                    HStack(spacing: 0) {
-                        ForEach(ViewMode.allCases, id: \.self) { mode in
-                            Button {
-                                setWindowMode(mode)
-                            } label: {
-                                Image(systemName: mode.icon)
-                                    .font(.system(size: 12, weight: .bold))  // Larger Icon
-                                    .foregroundColor(viewMode == mode ? .white : .secondary)
-                                    .frame(width: 36, height: 26)  // Larger Touch Target
-                                    .background(viewMode == mode ? Color.blue : Color.clear)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .background(Color.primary.opacity(0.1))
-                    .cornerRadius(8)
-                    .padding(.trailing, 4)
                 }
                 .padding(.horizontal, 30)
 
@@ -108,7 +64,7 @@ struct ContentView: View {
                         value: fanViewModel.primaryTemp,
                         icon: AppImages.temperature,
                         color: .orange,
-                        showInfoButton: viewMode != .expanded,
+                        showInfoButton: true,
                         action: {
                             fanViewModel.isShowingThermalDetails = true
                         }
@@ -121,33 +77,29 @@ struct ContentView: View {
             .padding(.vertical, 30)
             .frame(width: 350)
 
-            // Middle Column: Thermal Details (Only in Expanded mode)
-            if viewMode == .expanded {
-                Divider()
-                VStack(spacing: 0) {
-                    ThermalDetailView(fanViewModel: fanViewModel, isEmbedded: true)
-                }
-                .padding(.horizontal, 10)
-                .frame(width: 600)
+            // Middle Column: Thermal Details
+            Divider()
+            VStack(spacing: 0) {
+                ThermalDetailView(fanViewModel: fanViewModel, isEmbedded: true)
             }
+            .padding(.horizontal, 10)
+            .frame(width: 600)
 
-            // Right Column: Settings Panel (Hidden in Mini mode)
-            if viewMode != .mini {
-                Divider()
-                VStack(spacing: 0) {
-                    ScrollView {
-                        SettingsView(
-                            networkViewModel: networkViewModel,
-                            fanViewModel: fanViewModel,
-                            systemViewModel: systemViewModel,
-                            showWindowButton: false
-                        )
-                    }
+            // Right Column: Settings Panel
+            Divider()
+            VStack(spacing: 0) {
+                ScrollView {
+                    SettingsView(
+                        networkViewModel: networkViewModel,
+                        fanViewModel: fanViewModel,
+                        systemViewModel: systemViewModel,
+                        showWindowButton: false
+                    )
                 }
-                .frame(width: 280)
             }
+            .frame(width: 280)
         }
-        .frame(width: viewMode.width, height: 650)  // Fixed size
+        .frame(width: 1230, height: 650)  // Fixed size (full layout)
         .onAppear {
             // Mark dashboard as visible so view models can start polling.
             networkViewModel.isDashboardVisible = true
@@ -168,8 +120,7 @@ struct ContentView: View {
                     window.orderFrontRegardless()
                     NSApp.activate(ignoringOtherApps: true)
 
-                    // Enforce fixed size logic
-                    setupWindow(window, mode: .standard)
+                    setupWindow(window)
                 }
             }
         }
@@ -186,22 +137,9 @@ struct ContentView: View {
         }
     }
 
-    // Helper to resize window programmatically
-    private func setWindowMode(_ mode: ViewMode) {
-        withAnimation {
-            viewMode = mode
-        }
-
-        if let window = NSApp.windows.first(where: {
-            $0.isVisible && ($0.title == AppStrings.appName || $0.canBecomeKey)
-        }) {
-            setupWindow(window, mode: mode)
-        }
-    }
-
-    private func setupWindow(_ window: NSWindow, mode: ViewMode) {
+    private func setupWindow(_ window: NSWindow) {
         // Disable manual resizing by making min/max size the same
-        let newSize = CGSize(width: mode.width, height: 650)
+        let newSize = CGSize(width: 1230, height: 650)
         var frame = window.frame
         frame.origin.y += (frame.size.height - newSize.height)  // Keep top alignment? (macOS coords start bottom-left)
         // Actually, keeping the top-left corner stable is usually better, but handling origin.y is tricky without screen info
